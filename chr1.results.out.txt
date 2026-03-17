@@ -1,0 +1,23 @@
+========================================
+  Indel Size-Stratified Metrics
+  Source: data/outputs/happy_HG001_chr1.vcf.gz
+========================================
+
+Bin                        TP       FP       FN  Precision     Recall         F1
+----                     ----     ----     ----  ---------     ------     ------
+SNV                    254586      531     1486     0.9979     0.9942     0.9961
+INDEL_XS_1-4bp          32423      119      175     0.9963     0.9946     0.9955
+INDEL_S_5-15bp           4442       39       78     0.9913     0.9827     0.9870
+INDEL_M_16-50bp           652        8       38     0.9879     0.9449     0.9659
+INDEL_L_>50bp               5        1        0     0.8333     1.0000     0.9091
+----                     ----     ----     ----  ---------     ------     ------
+ALL_INDELS              37522      167      291     0.9956     0.9923     0.9939
+
+Note: These counts should approximately match hap.py summary.csv totals.
+Small differences are expected due to multi-allelic splitting.
+
+Verify against hap.py summary:
+  INDEL    TP: 37735  FP: 76744  FN: 298  F1: 0.993961
+  SNP      TP: 254586  FP: 311823  FN: 1486  F1: 0.996055
+
+Done.

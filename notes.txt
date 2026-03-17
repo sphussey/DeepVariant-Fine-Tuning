@@ -1,0 +1,4 @@
+# Quick variant counts
+bcftools stats data/outputs/HG001_chr1_deepvariant.vcf.gz | grep number of records
+bcftools view -H -v snps data/outputs/HG001_chr1_deepvariant.vcf.gz | wc -l
+bcftools view -H -v indels data/outputs/HG001_chr1_deepvariant.vcf.gz | wc -l
