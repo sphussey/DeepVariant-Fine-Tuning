@@ -1,0 +1,176 @@
+# ===========================================================================
+# DeepVariant Transfer Learning Configuration
+#
+# Edit this file to change samples, splits, resampling, and training params.
+# All pipeline scripts read from this single config.
+# ===========================================================================
+
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
+paths:
+  project_dir: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning
+  scratch_dir: /scratch/hussey.sh/dv_training
+  reference: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/reference/GCA_000001405.15_GRCh38_no_alt_analysis_set.fasta
+
+  # Containers
+  parabricks_sif: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/clara-parabricks_4.6.0-1.sif
+  dv_train_sif: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/deepvariant_train_4.3.2-1.sif
+  happy_sif: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/hap.py_v0.3.12.sif
+
+  # Pretrained checkpoint for warm start
+  # This gets extracted from the DV training container or downloaded separately
+  pretrained_checkpoint: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/models/wgs_baseline/deepvariant.wgs.ckpt
+
+# ---------------------------------------------------------------------------
+# Samples — comment/uncomment to include/exclude
+# Each sample needs: bam, truth_vcf, truth_bed
+# ---------------------------------------------------------------------------
+samples:
+  HG001:
+    bam: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/inputs/HG001.novaseq.pcr-free.30x.dedup.grch38.noalt.bam
+    truth_vcf: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG001_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+    truth_bed: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG001_GRCh38_1_22_v4.2.1_benchmark.bed
+
+  HG002:
+    bam: /scratch/hussey.sh/giab_bams/HG002.novaseq.pcr-free.40x.dedup.grch38.bam
+    truth_vcf: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG002_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+    truth_bed: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG002_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed
+
+  HG003:
+    bam: /scratch/hussey.sh/giab_bams/HG003.novaseq.pcr-free.40x.dedup.grch38.bam
+    truth_vcf: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG003_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+    truth_bed: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG003_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed
+
+  HG004:
+    bam: /scratch/hussey.sh/giab_bams/HG004.novaseq.pcr-free.40x.dedup.grch38.bam
+    truth_vcf: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG004_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+    truth_bed: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG004_GRCh38_1_22_v4.2.1_benchmark_noinconsistent.bed
+
+  HG005:
+    bam: /scratch/hussey.sh/giab_bams/HG005.novaseq.pcr-free.40x.dedup.grch38.bam
+    truth_vcf: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG005_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+    truth_bed: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG005_GRCh38_1_22_v4.2.1_benchmark.bed
+
+  # HG006:
+  #   bam: /scratch/hussey.sh/giab_bams/HG006.bam  # Need to download + reheader
+  #   truth_vcf: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG006_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+  #   truth_bed: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG006_GRCh38_1_22_v4.2.1_benchmark.bed
+
+  # HG007:
+  #   bam: /scratch/hussey.sh/giab_bams/HG007.bam  # Need to download + reheader
+  #   truth_vcf: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG007_GRCh38_1_22_v4.2.1_benchmark.vcf.gz
+  #   truth_bed: /home/hussey.sh/CS7150/DeepVariant-Fine-Tuning/data/truth_sets/HG007_GRCh38_1_22_v4.2.1_benchmark.bed
+
+# ---------------------------------------------------------------------------
+# Which samples to actually use in this run
+# Quick toggle — just edit this list instead of commenting blocks above
+# ---------------------------------------------------------------------------
+active_samples:
+  train: [HG003, HG004]        # Start small — AJ parents
+  tune: [HG001]                 # Checkpoint selection
+  eval: [HG002, HG005]          # Held-out evaluation (never trained on)
+
+# ---------------------------------------------------------------------------
+# Chromosome splits
+# ---------------------------------------------------------------------------
+chromosomes:
+  train: [chr1, chr2, chr3, chr4, chr5, chr6, chr7, chr8, chr9,
+          chr10, chr11, chr12, chr13, chr14, chr15, chr16, chr17, chr18, chr19]
+  tune: [chr21]
+  test: [chr20]                  # Final eval — matches DeepVariant published benchmarks
+
+# ---------------------------------------------------------------------------
+# Resampling strategy
+# Comment/uncomment ONE strategy block to activate it
+# ---------------------------------------------------------------------------
+resampling:
+  # --- Option 1: Target ratio (default) ---
+  # Forces each bin to the specified ratio. 1:1:1:1 = fully balanced.
+  strategy: target_ratio
+  target_ratio:
+    SNV: 4.0
+    INDEL_XS: 1.0              # 1-4 bp
+    INDEL_S: 1.0               # 5-15 bp
+    INDEL_M: 1.0               # 16-50 bp
+  max_oversample_factor: 10     # Cap repeats to avoid training on duplicates
+  random_seed: 42
+
+  # --- Option 2: Square root (uncomment to use) ---
+  # strategy: sqrt
+  # sqrt:
+  #   scaling_factor: auto       # auto = largest bin maps to original count
+
+  # --- Option 3: Contextual prioritization (uncomment to use) ---
+  # strategy: contextual
+  # contextual:
+  #   repeat_context_boost: 2.0  # Extra oversampling for indels in repeat regions
+  #   base_strategy: target_ratio
+  #   target_ratio:
+  #     SNV: 4.0
+  #     INDEL_XS: 1.0
+  #     INDEL_S: 1.0
+  #     INDEL_M: 1.0
+
+# ---------------------------------------------------------------------------
+# Indel size bins
+# ---------------------------------------------------------------------------
+size_bins:
+  INDEL_XS: [1, 4]
+  INDEL_S: [5, 15]
+  INDEL_M: [16, 50]
+  INDEL_L: [51, 999]            # Logged but excluded from rebalancing
+
+# ---------------------------------------------------------------------------
+# Training hyperparameters
+# ---------------------------------------------------------------------------
+training:
+  # Warm start
+  warm_start: true
+  freeze_backbone: true          # Freeze conv layers, train head only initially
+  unfreeze_after_step: 5000      # Unfreeze top conv blocks after this step (null = never)
+
+  # Optimizer
+  learning_rate: 0.0001
+  lr_schedule: cosine_decay      # cosine_decay | step_decay | constant
+  batch_size: 64
+  num_training_steps: 50000      # Total steps (not epochs — DV uses steps)
+  
+  # Early stopping
+  early_stopping: true
+  early_stopping_metric: F1_INDEL_M   # Optimize for the hardest bin
+  early_stopping_patience: 5000       # Steps without improvement before stopping
+  eval_interval: 1000                 # Evaluate every N steps
+
+  # Per-class loss weights (null = auto-compute from post-resampling frequencies)
+  loss_weights: null
+  # loss_weights:
+  #   SNV: 0.5
+  #   INDEL_XS: 1.0
+  #   INDEL_S: 2.0
+  #   INDEL_M: 4.0
+
+# ---------------------------------------------------------------------------
+# Experiment tracking
+# ---------------------------------------------------------------------------
+tracking:
+  backend: tensorboard           # tensorboard | wandb | both
+  tensorboard:
+    log_dir: /scratch/hussey.sh/dv_training/tb_logs
+  # wandb:                       # Uncomment to add W&B later
+  #   project: dv-indel-balance
+  #   entity: null
+  #   tags: [deepvariant, transfer-learning, indel-balance]
+
+# ---------------------------------------------------------------------------
+# SLURM settings for Northeastern Explorer
+# ---------------------------------------------------------------------------
+slurm:
+  partition: gpu
+  constraint: "a100|h200"        # Parabricks 4.6 needs Ampere+
+  gpus: 1
+  cpus: 8
+  mem: 32G
+  time_make_examples: "08:00:00"
+  time_training: "24:00:00"
+  time_eval: "04:00:00"

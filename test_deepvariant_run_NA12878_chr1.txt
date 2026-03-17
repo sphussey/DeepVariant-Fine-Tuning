@@ -1,0 +1,7 @@
+Submitted batch job 5096662 FAIL
+Submitted batch job 5097118 | 5097118       gpu dv_chr1_ hussey.s PD       0:00      1 (Nodes required for job are DOWN, DRAINED or reserved for jobs in higher priority partitions)
+Submitted batch job 5098433 FAIL
+Submitted batch job 5098576 FAIL adding --no-alt-contigs flag
+Submitted batch job 5098765 FAIL --no-alt-contigs not a real flag
+Submitted batch job 5098838 | FAIL alt contigs are in bam and reference fasta doesnt match 
+Submitted batch job 5105680 | 
